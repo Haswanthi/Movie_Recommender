@@ -1,0 +1,51 @@
+import streamlit as st
+import pickle
+import pandas as pd
+import requests
+import ast
+
+def fetch_poster(movie_id):
+    response = requests.get('https://api.themoviedb.org/3/movie/{}?api_key=a9ac56d1893f78eb0037de37093e9630&language=en-US'.format(movie_id))
+    data = response.json()
+    if 'poster_path' in data:
+        return "https://image.tmdb.org/t/p/w500/" + data['poster_path']
+    else:
+        # Return a default image URL or handle the absence of poster_path key as per your requirement
+        return "data:image/png;base64,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"
+
+
+
+def recommend(movie):
+    movie_index = movies[movies['title'] == movie].index[0]
+    distances = similarity[movie_index]
+    movies_list = sorted(list(enumerate(distances)), reverse=True, key= lambda x: x[1])[1:6]
+
+    movies_poster = []
+    recommended_movies = []
+    for i in movies_list:
+        movie_id = movies.iloc[i[0]].movie_id
+        recommended_movies.append(movies.iloc[i[0]].title)
+        movies_poster.append(fetch_poster(movie_id))
+    return recommended_movies, movies_poster
+
+
+movies_dict = pickle.load(open('movie_dict.pkl', 'rb' ))
+movies = pd.DataFrame(movies_dict)
+
+similarity = pickle.load(open('similarity.pkl', 'rb' ))
+
+st.title('Movie Recommender')
+
+selected_movie_name= st.selectbox(
+'Which movie would you like recommendations based on?',
+    movies['title'].values)
+
+if st.button('Recommend'):
+    movies_poster = []
+    names, posters = recommend(selected_movie_name)
+
+    cols = st.columns(5)
+    for i in range(5):
+        with cols[i]:
+            st.text(names[i])
+            st.image(posters[i])
